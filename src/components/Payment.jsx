@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
+import { API_BASE_URL } from '../api';
 const handleSubmit = async (e) => {
   e.preventDefault();
   
   try {
     // Get cart items from backend
-    const cartResponse = await fetch('http://localhost:5000/api/cart');
+  const cartResponse = await fetch(`${API_BASE_URL}/api/cart`);
     const cartData = await cartResponse.json();
     
     if (!cartData.success || cartData.cart.length === 0) {
@@ -14,7 +15,7 @@ const handleSubmit = async (e) => {
 
     const total = cartData.total + 5 + (cartData.total * 0.1); // Add shipping and tax
     
-    const paymentResponse = await fetch('http://localhost:5000/api/payment', {
+  const paymentResponse = await fetch(`${API_BASE_URL}/api/payment`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -58,7 +59,7 @@ const Payment = () => {
   });
 const handlePayment = async (paymentData) => {
   try {
-    const response = await fetch('http://localhost:5000/api/payment', {
+  const response = await fetch(`${API_BASE_URL}/api/payment`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

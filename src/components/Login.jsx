@@ -8,25 +8,41 @@ const Login = ({ onLogin }) => {
     name: ''
   });
   const [error, setError] = useState('');
+  const [showSignupSuggestion, setShowSignupSuggestion] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setShowSignupSuggestion(false);
     try {
+      // Normalize and validate email on the client to give faster feedback
+      const email = (formData.email || '').trim().toLowerCase();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setError('Please enter a valid email address.');
+        return;
+      }
+
       const url = isLogin ? '/api/auth/login' : '/api/auth/signup';
       const res = await fetch(`${API_BASE_URL}${url}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: formData.email,
+          email,
           password: formData.password,
           ...(isLogin ? {} : { name: formData.name })
         })
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
-        throw new Error(data?.message || 'Authentication failed');
+        const msg = data?.message || 'Authentication failed';
+        // If credentials are invalid, suggest signing up
+        if (msg.toLowerCase().includes('invalid credentials')) {
+          setShowSignupSuggestion(true);
+        }
+        throw new Error(msg);
       }
+      setShowSignupSuggestion(false);
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       onLogin(data.user);
@@ -122,6 +138,11 @@ const Login = ({ onLogin }) => {
         }} onSubmit={handleSubmit}>
           {error && (
             <div style={{ color: '#ff4757', textAlign: 'left' }}>{error}</div>
+          )}
+          {showSignupSuggestion && (
+            <div style={{ color: '#333', textAlign: 'left', marginTop: '6px' }}>
+              No account found for that email? <span onClick={() => setIsLogin(false)} style={{ color: '#e91e63', cursor: 'pointer', fontWeight: 'bold' }}>Create one</span>.
+            </div>
           )}
           {!isLogin && (
             <input 
