@@ -136,9 +136,42 @@ const handlePayment = async (paymentData) => {
     }
   };
 
-  const handleSubmit = (e) => {
+ const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('Order placed successfully! Thank you for your purchase.');
+
+    try {
+      const cartResponse = await fetch(`${API_BASE_URL}/api/cart`);
+      const cartData = await cartResponse.json();
+
+      if (!cartData.success || cartData.cart.length === 0) {
+        alert('Your cart is empty!');
+        return;
+      }
+
+      const total = cartData.total + 5 + (cartData.total * 0.1);
+
+      const paymentResponse = await fetch(`${API_BASE_URL}/api/payment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cartItems: cartData.cart,
+          total,
+          paymentMethod,
+          shippingInfo: formData
+        })
+      });
+
+      const paymentData = await paymentResponse.json();
+
+      if (paymentData.success) {
+        alert(`Order placed successfully! Order ID: ${paymentData.orderId}`);
+      } else {
+        alert('Payment failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      alert('Payment processing error. Please try again.');
+    }
   };
 
   const renderShippingStep = () => (
