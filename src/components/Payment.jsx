@@ -2,43 +2,20 @@ import React, { useState } from 'react';
 import { API_BASE_URL } from '../api';
 const handleSubmit = async (e) => {
   e.preventDefault();
-  
-  try {
-    // Get cart items from backend
-  const cartResponse = await fetch(`${API_BASE_URL}/api/cart`);
-    const cartData = await cartResponse.json();
-    
-    if (!cartData.success || cartData.cart.length === 0) {
-      alert('Your cart is empty!');
-      return;
-    }
 
-    const total = cartData.total + 5 + (cartData.total * 0.1); // Add shipping and tax
-    
-  const paymentResponse = await fetch(`${API_BASE_URL}/api/payment`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        cartItems: cartData.cart,
-        total: total,
-        paymentMethod: paymentMethod,
-        shippingInfo: formData
-      })
-    });
-    
-    const paymentData = await paymentResponse.json();
-    
-    if (paymentData.success) {
-      alert(`Order placed successfully! Order ID: ${paymentData.orderId}`);
-      // Redirect to order confirmation page
-    } else {
-      alert('Payment failed. Please try again.');
-    }
+  try {
+    // 🧹 Clear the cart in backend
+    await fetch(`${API_BASE_URL}/api/cart/clear`, { method: 'DELETE' });
+
+    alert('Order placed successfully!');
+    // ⏩ Go to home page
+    window.location.href = '/';
   } catch (error) {
-    console.error('Payment error:', error);
-    alert('Payment processing error. Please try again.');
+    console.error('Error clearing cart:', error);
+    alert('Something went wrong. Please try again.');
   }
 };
+
 const Payment = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState('card');
