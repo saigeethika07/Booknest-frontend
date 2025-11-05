@@ -4,12 +4,11 @@ const handleSubmit = async (e) => {
   e.preventDefault();
 
   try {
-    // 🧹 Clear the cart in backend
+    // Clear cart in backend
     await fetch(`${API_BASE_URL}/api/cart/clear`, { method: 'DELETE' });
 
     alert('Order placed successfully!');
-    // ⏩ Go to home page
-    window.location.href = '/';
+    navigate('/'); // ✅ Go to home page without reload
   } catch (error) {
     console.error('Error clearing cart:', error);
     alert('Something went wrong. Please try again.');
