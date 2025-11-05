@@ -1,26 +1,5 @@
 import React, { useState } from 'react';
 import { API_BASE_URL } from '../api';
-const handleSubmit = async (e) => {
-  e.preventDefault();
-
-  try {
-    // Clear cart first
-    const clearResponse = await fetch(`${API_BASE_URL}/api/cart/clear`, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-    });
-
-    if (!clearResponse.ok) {
-      throw new Error('Failed to clear cart');
-    }
-
-    alert('Order placed successfully!');
-    window.location.href = '/'; // navigate back to home page
-  } catch (error) {
-    console.error('Error clearing cart:', error);
-    alert('Something went wrong. Please try again.');
-  }
-};
 
 
 const Payment = () => {
@@ -121,42 +100,60 @@ const handlePayment = async (paymentData) => {
   };
 
  const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    try {
-      const cartResponse = await fetch(`${API_BASE_URL}/api/cart`);
-      const cartData = await cartResponse.json();
+  try {
+    // Step 1: Fetch current cart
+    const cartResponse = await fetch(`${API_BASE_URL}/api/cart`);
+    const cartData = await cartResponse.json();
 
-      if (!cartData.success || cartData.cart.length === 0) {
-        alert('Your cart is empty!');
-        return;
-      }
-
-      const total = cartData.total + 5 + (cartData.total * 0.1);
-
-      const paymentResponse = await fetch(`${API_BASE_URL}/api/payment`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          cartItems: cartData.cart,
-          total,
-          paymentMethod,
-          shippingInfo: formData
-        })
-      });
-
-      const paymentData = await paymentResponse.json();
-
-      if (paymentData.success) {
-        alert(`Order placed successfully! Order ID: ${paymentData.orderId}`);
-      } else {
-        alert('Payment failed. Please try again.');
-      }
-    } catch (error) {
-      console.error('Payment error:', error);
-      alert('Payment processing error. Please try again.');
+    if (!cartData.success || cartData.cart.length === 0) {
+      alert('Your cart is empty!');
+      return;
     }
-  };
+
+    // Step 2: Calculate total (subtotal + shipping + tax)
+    const shipping = 5;
+    const tax = cartData.total * 0.1;
+    const total = cartData.total + shipping + tax;
+
+    // Step 3: Send payment data to backend
+    const paymentResponse = await fetch(`${API_BASE_URL}/api/payment`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        cartItems: cartData.cart,
+        total,
+        paymentMethod,
+        shippingInfo: formData,
+      }),
+    });
+
+    const paymentData = await paymentResponse.json();
+
+    if (!paymentData.success) {
+      alert('Payment failed. Please try again.');
+      return;
+    }
+
+    // Step 4: Clear user’s cart in backend
+    const clearResponse = await fetch(`${API_BASE_URL}/api/cart/clear/all`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!clearResponse.ok) {
+      throw new Error('Failed to clear cart after order');
+    }
+
+    // Step 5: Show success message & navigate home
+    alert(`✅ Order placed successfully! Order ID: ${paymentData.orderId}`);
+    window.location.href = '/';
+  } catch (error) {
+    console.error('Payment processing error:', error);
+    alert('Something went wrong during checkout. Please try again.');
+  }
+};
 
   const renderShippingStep = () => (
     <div style={{
