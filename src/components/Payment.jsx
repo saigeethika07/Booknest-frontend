@@ -60,51 +60,69 @@ const Payment = () => {
   // ✅ Confirm Order Handler (includes cart clear + redirect)
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
-      // 1️⃣ Get cart items
+      // Get cart items from backend
       const cartResponse = await fetch(`${API_BASE_URL}/api/cart`);
       const cartData = await cartResponse.json();
 
       if (!cartData.success || cartData.cart.length === 0) {
-        alert("Your cart is empty!");
+        alert('Your cart is empty!');
         return;
       }
 
-      // 2️⃣ Calculate total (subtotal + shipping + tax)
-      const total = cartData.total + 5 + cartData.total * 0.1;
+      const total = cartData.total + 5 + (cartData.total * 0.1); // Add shipping and tax
 
-      // 3️⃣ Post payment
       const paymentResponse = await fetch(`${API_BASE_URL}/api/payment`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           cartItems: cartData.cart,
-          total,
-          paymentMethod,
-          shippingInfo: formData,
-        }),
+          total: total,
+          paymentMethod: paymentMethod,
+          shippingInfo: formData
+        })
       });
 
       const paymentData = await paymentResponse.json();
 
       if (paymentData.success) {
-        // 4️⃣ Clear cart
-        await fetch(`${API_BASE_URL}/api/cart/clear/all`, {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
+        alert(`Order placed successfully! Order ID: ${paymentData.orderId}`);
+
+        // 🧹 Clear cart after successful order
+        await fetch(`${API_BASE_URL}/api/cart/clear`, {
+          method: 'DELETE',
         });
 
-        alert(`Order placed successfully! Order ID: ${paymentData.orderId}`);
-        navigate("/"); // 5️⃣ Redirect to home page
+        // If using localStorage cart
+        localStorage.removeItem('cart');
+
+        // Reset shipping & payment form
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          phone: '',
+          address: '',
+          city: '',
+          state: '',
+          zipCode: '',
+          country: '',
+          cardNumber: '',
+          expiryDate: '',
+          cvv: '',
+          nameOnCard: ''
+        });
+
+        alert('Your cart has been cleared. Thank you for shopping!');
       } else {
-        alert("Payment failed. Please try again.");
+        alert('Payment failed. Please try again.');
       }
     } catch (error) {
-      console.error("Payment error:", error);
-      alert("Something went wrong while processing your order.");
+      console.error('Payment error:', error);
+      alert('Payment processing error. Please try again.');
     }
   };
-
   const steps = [
     { number: 1, label: "Shipping" },
     { number: 2, label: "Payment" },
