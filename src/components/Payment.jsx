@@ -82,46 +82,57 @@ const handlePayment = async (paymentData) => {
     { number: 3, label: 'Review' }
   ];
 
- const handleInputChange = (e) => {
-  const { name, value } = e.target;
+// Inside your Payment component
+const handleExpiryChange = (e) => {
+  let val = e.target.value;
 
-  if (name === 'expiryDate') {
-    // Keep only digits and '/'
-    const cleanedValue = value.replace(/[^0-9/]/g, '');
+  // Keep only numbers and '/'
+  val = val.replace(/[^0-9/]/g, '');
 
-    // Auto-add slash after MM if user types two digits
-    if (cleanedValue.length === 2 && !cleanedValue.includes('/')) {
-      setFormData({ ...formData, [name]: cleanedValue + '/' });
-      return;
-    }
+  // Auto-add '/' after typing 2 digits (MM)
+  if (val.length === 2 && !val.includes('/')) {
+    val = val + '/';
+  }
 
-    // Full validation once user entered 5 chars (MM/YY)
-    if (cleanedValue.length === 5) {
-      const formatRegex = /^(0[1-9]|1[0-2])\/\d{2}$/; // strictly MM/YY, month 01-12
-      if (!formatRegex.test(cleanedValue)) {
-        alert('Invalid format! Please enter date in MM/YY format (e.g., 09/26).');
-      } else {
-        const [monthStr, yearStr] = cleanedValue.split('/');
-        const month = parseInt(monthStr, 10);
-        const year = parseInt(yearStr, 10);
-        const currentYear = new Date().getFullYear() % 100; // e.g. 2025 -> 25
+  // Trim length to max 5 (MM/YY)
+  if (val.length > 5) val = val.slice(0, 5);
 
-        if (year < currentYear) {
-          alert('Card expiry year must be in the future.');
-        }
-      }
-    }
+  setFormData(prev => ({ ...prev, expiryDate: val }));
 
-    setFormData({ ...formData, [name]: cleanedValue });
+  // Real-time validation
+  const regex = /^(\d{0,2})(\/?)(\d{0,2})$/;
+  const match = val.match(regex);
+
+  if (!match) {
+    alert('Invalid characters! Please enter in MM/YY format.');
     return;
   }
 
-  // Handle other input fields normally
-  setFormData({
-    ...formData,
-    [name]: value
-  });
+  const [_, mm, slash, yy] = match;
+
+  // Validate month as soon as it's typed (1–12 only)
+  if (mm.length === 2) {
+    const month = parseInt(mm, 10);
+    if (month < 1 || month > 12) {
+      alert('Invalid month! Please enter between 01 and 12.');
+      return;
+    }
+  }
+
+  // Validate year when both parts are present
+  if (mm.length === 2 && yy.length === 2 && slash === '/') {
+    const year = parseInt(yy, 10);
+    const currentYear = new Date().getFullYear() % 100;
+    const month = parseInt(mm, 10);
+    const currentMonth = new Date().getMonth() + 1;
+
+    if (year < currentYear || (year === currentYear && month < currentMonth)) {
+      alert('Card has expired.');
+      return;
+    }
+  }
 };
+
 
 
   const handleNext = () => {
