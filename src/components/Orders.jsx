@@ -25,7 +25,14 @@ const Orders = () => {
   if (loading) {
     return (
       <div style={{ padding: '2rem', textAlign: 'center' }}>
-        <h1 style={{ color: '#e91e63', fontSize: '2.5rem', marginBottom: '1rem', fontFamily: 'Georgia, serif' }}>
+        <h1
+          style={{
+            color: '#e91e63',
+            fontSize: '2.5rem',
+            marginBottom: '1rem',
+            fontFamily: 'Georgia, serif',
+          }}
+        >
           My Orders
         </h1>
         <div>Loading orders...</div>
@@ -36,7 +43,14 @@ const Orders = () => {
   if (orders.length === 0) {
     return (
       <div style={{ padding: '2rem', textAlign: 'center' }}>
-        <h1 style={{ color: '#e91e63', fontSize: '2.5rem', marginBottom: '1rem', fontFamily: 'Georgia, serif' }}>
+        <h1
+          style={{
+            color: '#e91e63',
+            fontSize: '2.5rem',
+            marginBottom: '1rem',
+            fontFamily: 'Georgia, serif',
+          }}
+        >
           My Orders
         </h1>
         <div
@@ -86,13 +100,13 @@ const Orders = () => {
             <strong>Date:</strong> {new Date(order.createdAt).toLocaleString()}
           </div>
           <div style={{ marginBottom: '0.8rem' }}>
-            <strong>Total:</strong> ₹{order.totalAmount}
+            <strong>Total:</strong> ₹{order.total}
           </div>
 
           <div style={{ marginTop: '1rem' }}>
             <h3 style={{ color: '#e91e63', marginBottom: '0.5rem' }}>Items:</h3>
             <ul style={{ marginLeft: '1rem', color: '#555' }}>
-              {order.items.map((item, index) => (
+              {order.cartItems.map((item, index) => (
                 <li key={index} style={{ marginBottom: '0.3rem' }}>
                   {item.title} × {item.quantity} — ₹{item.price * item.quantity}
                 </li>
