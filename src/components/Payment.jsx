@@ -108,7 +108,6 @@ const handlePayment = async (paymentData) => {
     const cartData = await cartResponse.json();
 
     if (!cartData.success || cartData.cart.length === 0) {
-      alert('Your cart is empty!');
       return;
     }
 
