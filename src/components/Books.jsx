@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE_URL, authHeaders } from '../api';
+import { ToastContainer, toast } from 'react-toastify'; // 🟢 Added
+import 'react-toastify/dist/ReactToastify.css'; // 🟢 Added
 
 const Books = ({ onAddToCart, onItemAdded }) => {
   const [books, setBooks] = useState([]);
@@ -50,9 +52,25 @@ const Books = ({ onAddToCart, onItemAdded }) => {
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.message || 'Failed to add to cart');
+
+      toast.success(`${book.title} added to cart! 🛒`, { // 🟢 Toast success
+        position: 'top-center',
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'colored',
+      });
+
       if (onItemAdded) onItemAdded();
     } catch (e) {
-      alert('Please login to add to cart');
+      toast.error('Please login to add to cart ⚠️', { // 🟢 Toast error
+        position: 'top-center',
+        autoClose: 2000,
+        theme: 'colored',
+      });
     }
   };
 
@@ -91,6 +109,9 @@ const Books = ({ onAddToCart, onItemAdded }) => {
       maxWidth: '1200px', 
       margin: '0 auto' 
     }}>
+      {/* 🟢 Toast Container */}
+      <ToastContainer />
+
       <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
         <h1 style={{ 
           color: '#e91e63', 
