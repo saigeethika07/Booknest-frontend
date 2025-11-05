@@ -82,12 +82,34 @@ const handlePayment = async (paymentData) => {
     { number: 3, label: 'Review' }
   ];
 
-  const handleInputChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
+ const handleInputChange = (e) => {
+  const { name, value } = e.target;
+
+  // Validation for expiry date (MM/YY format)
+  if (name === 'expiryDate') {
+    const regex = /^(\d{2})\/(\d{2})$/; // matches MM/YY pattern
+    if (value.length === 5 && regex.test(value)) {
+      const [_, monthStr, yearStr] = value.match(regex);
+      const month = parseInt(monthStr, 10);
+      const year = parseInt(yearStr, 10);
+      const currentYear = new Date().getFullYear() % 100; // get last two digits of year
+
+      if (month < 1 || month > 12) {
+        alert('Invalid month! Please enter a value between 01 and 12.');
+      } else if (year < currentYear) {
+        alert('Card expiry year must be in the future.');
+      }
+    } else if (value.length === 5 && !regex.test(value)) {
+      alert('Invalid format! Please use MM/YY (e.g., 09/26).');
+    }
+  }
+
+  setFormData({
+    ...formData,
+    [name]: value
+  });
+};
+
 
   const handleNext = () => {
     if (currentStep < 3) {
