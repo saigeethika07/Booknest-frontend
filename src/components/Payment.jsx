@@ -85,25 +85,38 @@ const handlePayment = async (paymentData) => {
  const handleInputChange = (e) => {
   const { name, value } = e.target;
 
-  // Validation for expiry date (MM/YY format)
   if (name === 'expiryDate') {
-    const regex = /^(\d{2})\/(\d{2})$/; // matches MM/YY pattern
-    if (value.length === 5 && regex.test(value)) {
-      const [_, monthStr, yearStr] = value.match(regex);
-      const month = parseInt(monthStr, 10);
-      const year = parseInt(yearStr, 10);
-      const currentYear = new Date().getFullYear() % 100; // get last two digits of year
+    // Keep only digits and '/'
+    const cleanedValue = value.replace(/[^0-9/]/g, '');
 
-      if (month < 1 || month > 12) {
-        alert('Invalid month! Please enter a value between 01 and 12.');
-      } else if (year < currentYear) {
-        alert('Card expiry year must be in the future.');
-      }
-    } else if (value.length === 5 && !regex.test(value)) {
-      alert('Invalid format! Please use MM/YY (e.g., 09/26).');
+    // Auto-add slash after MM if user types two digits
+    if (cleanedValue.length === 2 && !cleanedValue.includes('/')) {
+      setFormData({ ...formData, [name]: cleanedValue + '/' });
+      return;
     }
+
+    // Full validation once user entered 5 chars (MM/YY)
+    if (cleanedValue.length === 5) {
+      const formatRegex = /^(0[1-9]|1[0-2])\/\d{2}$/; // strictly MM/YY, month 01-12
+      if (!formatRegex.test(cleanedValue)) {
+        alert('Invalid format! Please enter date in MM/YY format (e.g., 09/26).');
+      } else {
+        const [monthStr, yearStr] = cleanedValue.split('/');
+        const month = parseInt(monthStr, 10);
+        const year = parseInt(yearStr, 10);
+        const currentYear = new Date().getFullYear() % 100; // e.g. 2025 -> 25
+
+        if (year < currentYear) {
+          alert('Card expiry year must be in the future.');
+        }
+      }
+    }
+
+    setFormData({ ...formData, [name]: cleanedValue });
+    return;
   }
 
+  // Handle other input fields normally
   setFormData({
     ...formData,
     [name]: value
