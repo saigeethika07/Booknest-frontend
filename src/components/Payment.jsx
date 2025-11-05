@@ -4,16 +4,24 @@ const handleSubmit = async (e) => {
   e.preventDefault();
 
   try {
-    // Clear cart in backend
-    await fetch(`${API_BASE_URL}/api/cart/clear`, { method: 'DELETE' });
+    // Clear cart first
+    const clearResponse = await fetch(`${API_BASE_URL}/api/cart/clear`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!clearResponse.ok) {
+      throw new Error('Failed to clear cart');
+    }
 
     alert('Order placed successfully!');
-    navigate('/'); // ✅ Go to home page without reload
+    window.location.href = '/'; // navigate back to home page
   } catch (error) {
     console.error('Error clearing cart:', error);
     alert('Something went wrong. Please try again.');
   }
 };
+
 
 const Payment = () => {
   const [currentStep, setCurrentStep] = useState(1);
